@@ -20,18 +20,6 @@ LiteRT-LM is Google's runtime for running large language models locally on CPU a
 
 ---
 
-## 📁 Repository layout
-
-```
-litert-llm-cookbook/
-  python/            Python scripts (01 through 11)
-  colab/             Google Colab notebooks covering the same examples
-  requirements.txt   Python dependencies
-  README.md          This file
-```
-
----
-
 ## ✅ Prerequisites
 
 - Python 3.10 or newer
