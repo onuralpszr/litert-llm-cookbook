@@ -1,1 +1,154 @@
-# litert-llm-cookbook
+# LiteRT-LM Cookbook
+
+A collection of runnable Python examples and Google Colab notebooks that show how to use [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) to run Gemma-4 E2B on-device. Every example is self-contained and written to be read in order, from the simplest single-turn chat all the way up to a full local OpenAI-compatible API server.
+
+The model used throughout is **Gemma-4 E2B Instruct** (2 billion parameters, edge-optimised), a good balance between capability and speed on consumer hardware.
+
+---
+
+## What is LiteRT-LM?
+
+LiteRT-LM is Google's runtime for running large language models locally on CPU and GPU without a network connection. It exposes a Python API, a command-line tool (`litert-lm`), and a local server that speaks the OpenAI Responses API and the Gemini API. All inference stays on your machine.
+
+---
+
+## Repository layout
+
+```
+litert-llm-cookbook/
+  python/            Python scripts (01 through 11)
+  colab/             Google Colab notebooks covering the same examples
+  requirements.txt   Python dependencies
+  README.md          This file
+```
+
+---
+
+## Prerequisites
+
+- Python 3.10 or newer
+- `pip` or `uv`
+- For GPU examples (04, 05, 10): a GPU with a compatible driver
+- For the API server example (11): the `litert-lm` CLI must be on your PATH
+
+---
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+Or with `uv`:
+
+```bash
+uv pip install -r requirements.txt
+```
+
+The `requirements.txt` pulls in `litert-lm-api-nightly`, `litert-lm`, `openai`, and `requests`.
+
+---
+
+## Downloading the model
+
+Scripts 01 through 10 expect the model file to sit **in the same directory where you run the script**. Script 11 uses the model registered in the LiteRT-LM local store instead.
+
+### Option A: Direct download
+
+Download the file from Hugging Face and place it next to the scripts:
+
+```bash
+curl -L \
+  "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm?download=true" \
+  -o gemma-4-E2B-it.litertlm
+```
+
+Or open the URL directly in a browser:
+
+```
+https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm?download=true
+```
+
+The file is several gigabytes, so the download takes a few minutes on a typical connection.
+
+### Option B: LiteRT-LM CLI (required for example 11)
+
+The `litert-lm import` command downloads the model and registers it in the local model store (`~/.litert-lm/models/`). The API server in example 11 needs the model registered this way.
+
+```bash
+litert-lm import \
+    --from-huggingface-repo=litert-community/gemma-4-E2B-it-litert-lm \
+    gemma-4-E2B-it.litertlm
+```
+
+Expected output:
+
+```
+Downloading gemma-4-E2B-it.litertlm from litert-community/gemma-4-E2B-it-litert-lm...
+Successfully imported model to /Users/you/.litert-lm/models/gemma-4-E2B-it.litertlm/model.litertlm
+You can now run the model with 'litert-lm run gemma-4-E2B-it.litertlm'
+```
+
+---
+
+## Quick start
+
+After placing the model file next to the scripts, run any example directly:
+
+```bash
+cd python
+python 01_basic_chat.py
+```
+
+---
+
+## Examples at a glance
+
+| File | What it shows |
+|------|---------------|
+| `01_basic_chat.py` | Single synchronous request and response |
+| `02_streaming_chat_loop.py` | Interactive terminal chat with streaming output |
+| `03_system_prompt.py` | Setting a persona through a system message |
+| `04_gpu_backend.py` | Running inference on GPU instead of CPU |
+| `05_speculative_decoding.py` | GPU with multi-token prediction for faster output |
+| `06_tool_use.py` | Registering Python functions as callable tools |
+| `07_multimodal_audio.py` | Sending an audio file alongside a text prompt |
+| `08_multimodal_vision.py` | Sending an image alongside a text prompt |
+| `09_streaming_with_system_prompt.py` | Streaming output combined with a system persona |
+| `10_all_features.py` | GPU, speculative decoding, tools, and streaming together |
+| `11_openai_api_server.py` | Using the local OpenAI and Gemini API server |
+
+See the `python/` folder for the scripts and their individual documentation.
+See the `colab/` folder for the Colab notebook versions of the same examples.
+
+---
+
+## API server (example 11 in detail)
+
+Example 11 demonstrates two server modes. Both require the model to be imported first (Option B above).
+
+**Start the OpenAI Responses API server:**
+
+```bash
+litert-lm serve --api openai --host localhost --port 9379
+```
+
+**Start the Gemini API server:**
+
+```bash
+litert-lm serve --api gemini --host localhost --port 9379
+```
+
+Then run the client script in a separate terminal while the server is running:
+
+```bash
+python 11_openai_api_server.py
+```
+
+The script covers four usage patterns: the OpenAI Python SDK, raw SSE streaming, Gemini basic chat, and Gemini multi-turn conversation.
+
+---
+
+## License
+
+See [LICENSE](LICENSE).
